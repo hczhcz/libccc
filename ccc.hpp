@@ -20,8 +20,9 @@
 
 namespace ccc {
 
-enum font {
-    f_0, // the same as d_font
+enum Style {
+    // font
+    f_0 = 10,
     f_1,
     f_2,
     f_3,
@@ -30,36 +31,29 @@ enum font {
     f_6,
     f_7,
     f_8,
-    f_9
-};
+    f_9,
 
-enum color_f {
-    cf_black,
+    // foreground color
+    cf_black = 30,
     cf_red,
     cf_green,
     cf_yellow,
     cf_blue,
     cf_magenta,
     cf_cyan,
-    cf_white
-};
+    cf_white,
 
-enum color_b {
-    cb_black,
+    // background color
+    cb_black = 40,
     cb_red,
     cb_green,
     cb_yellow,
     cb_blue,
     cb_magenta,
     cb_cyan,
-    cb_white
-};
+    cb_white,
 
-enum style {
-    s_font = 10,
-    s_color_f = 30,
-    s_color_b = 40,
-
+    // enable style
     s_bold = 1,
     s_faint = 2,
 
@@ -78,10 +72,9 @@ enum style {
     s_negative = 7,
     s_conceal = 8,
     s_delete = 9,
-    s_overlined = 53
-};
+    s_overlined = 53,
 
-enum disable {
+    // disable style
     d_all = 0,
     d_font = 10,
     d_color_f = 39,
@@ -99,9 +92,9 @@ enum disable {
     d_overlined = 55
 };
 
-inline std::ostream &operator<<(std::ostream &s, const font &c) {
+static std::ostream &operator<<(std::ostream &s, const Style &style) {
     #if defined(CCC_UNIX)
-        return s << '\e' << '[' << (int) (s_font + c) << 'm';
+        return s << '\x1b' << '[' << (int) style << 'm';
     #elif defined(CCC_WINDOWS)
         // TODO
 
@@ -116,72 +109,24 @@ inline std::ostream &operator<<(std::ostream &s, const font &c) {
     #endif
 }
 
-inline std::ostream &operator<<(std::ostream &s, const color_f &c) {
-    #if defined(CCC_UNIX)
-        return s << '\e' << '[' << (int) (s_color_f + c) << 'm';
-    #elif defined(CCC_WINDOWS)
-        // TODO
+template <class T>
+class alsoStyle {
+public:
+    const T _object;
+    const Style _style;
 
-        assert(s == std::cout);
+    inline alsoStyle(const T &object, const Style &style):
+        _object(object), _style(style) {}
+};
 
-        HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-        CONSOLE_SCREEN_BUFFER_INFO buf_info;
-        GetConsoleScreenBufferInfo(handle, &buf_info);
-        SetConsoleTextAttribute(hStdOut, /* TODO */);
-
-        return s;
-    #endif
+template <class T>
+static const alsoStyle<T> operator+(const T &object, const Style &style) {
+    return alsoStyle<T>(object, style);
 }
 
-inline std::ostream &operator<<(std::ostream &s, const color_b &c) {
-    #if defined(CCC_UNIX)
-        return s << '\e' << '[' << (int) (s_color_b + c) << 'm';
-    #elif defined(CCC_WINDOWS)
-        // TODO
-
-        assert(s == std::cout);
-
-        HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-        CONSOLE_SCREEN_BUFFER_INFO buf_info;
-        GetConsoleScreenBufferInfo(handle, &buf_info);
-        SetConsoleTextAttribute(hStdOut, /* TODO */);
-
-        return s;
-    #endif
-}
-
-inline std::ostream &operator<<(std::ostream &s, const style &c) {
-    #if defined(CCC_UNIX)
-        return s << '\e' << '[' << (int) c << 'm';
-    #elif defined(CCC_WINDOWS)
-        // TODO
-
-        assert(s == std::cout);
-
-        HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-        CONSOLE_SCREEN_BUFFER_INFO buf_info;
-        GetConsoleScreenBufferInfo(handle, &buf_info);
-        SetConsoleTextAttribute(hStdOut, /* TODO */);
-
-        return s;
-    #endif
-}
-
-inline std::ostream &operator<<(std::ostream &s, const disable &c) {
-    #if defined(CCC_UNIX)
-        return s << '\e' << '[' << (int) c << 'm';
-    #elif defined(CCC_WINDOWS)
-        // TODO
-
-        assert(s == std::cout);
-
-        HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-        CONSOLE_SCREEN_BUFFER_INFO buf_info;
-        GetConsoleScreenBufferInfo(handle, &buf_info);
-        SetConsoleTextAttribute(hStdOut, /* TODO */);
-
-        return s;
-    #endif
+template <class T>
+inline std::ostream &operator<<(std::ostream &s, const alsoStyle<T> &target) {
+    return s << target._object << target._style;
 }
 
 }
